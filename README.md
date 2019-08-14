@@ -1,6 +1,6 @@
 Test
 -----
-Add a status badge here.
+[![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/JamesDLD.terraform-azurerm-Az-Vm?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=15&branchName=master)
 
 Usage
 -----
@@ -11,7 +11,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "infrsand1vpcjdld1"
     container_name       = "tfstate"
-    key                  = "Az-Vm.master.tfstate"
+    key                  = "Az-Vm.master.test.tfstate"
     resource_group_name  = "infr-jdld-noprd-rg1"
   }
 }

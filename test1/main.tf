@@ -3,7 +3,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "infrsand1vpcjdld1"
     container_name       = "tfstate"
-    key                  = "Az-Vm.master.tfstate"
+    key                  = "Az-Vm.master.test.tfstate"
     resource_group_name  = "infr-jdld-noprd-rg1"
   }
 }
