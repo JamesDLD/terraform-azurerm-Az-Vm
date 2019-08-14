@@ -5,7 +5,6 @@ Test
 Usage
 -----
 ```hcl
-
 #Set the terraform backend
 terraform {
   backend "azurerm" {
@@ -176,7 +175,7 @@ variable "additional_tags" {
 
 #Call module
 module "Az-VirtualNetwork-Demo" {
-  source                      = "git::https://github.com/JamesDLD/terraform-azurerm-Az-VirtualNetwork.git"
+  source                      = "git::https://github.com/JamesDLD/terraform-azurerm-Az-VirtualNetwork.git?ref=0.1.0"
   net_prefix                  = "myproductvm-perimeter"
   network_resource_group_name = "infr-jdld-noprd-rg2"
   virtual_networks            = var.virtual_networks
@@ -187,7 +186,7 @@ module "Az-VirtualNetwork-Demo" {
 }
 
 module "Create-AzureRmLoadBalancer-Demo" {
-  source                 = "git::https://github.com/JamesDLD/terraform-azurerm-Az-LoadBalancer.git"
+  source                 = "git::https://github.com/JamesDLD/terraform-azurerm-Az-LoadBalancer.git?ref=0.1.0"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
@@ -216,15 +215,15 @@ module "Az-Vm-Demo" {
   #All other optional values
   /*
   vm_location                       = element(module.Az-VirtualNetwork-Demo.vnet_locations, 0) #(Optional) Use the RG's location if not set
-  workspace_resource_group_name     = ""                                                       #(Optional) Use the RG's location if not set
   workspace_name                    = ""                                                       #(Optional)
+  workspace_resource_rgname         = ""                                                       #(Optional) Use the RG's location if not set
   enable_log_analytics_dependencies = "true"                                                   #(Optional) Default is false
   nsgs_ids                          = module.Az-VirtualNetwork-Demo.network_security_group_ids #(Optional)
   public_ip_ids                     = module.Az-VirtualNetwork-Demo.public_ip_ids              #(Optional)
   public_lb_backend_ids             = ["public_backend_id1", "public_backend_id1"]             #(Optional)
   recovery_services_vault_name      = "infra-jdld-infr-rsv1"                                   #(Optional)
   recovery_services_vault_rgname    = "infr-jdld-noprd-rg1"                                    #(Optional) Use the RG's location if not set
-  #*/
+*/
 
 }
 

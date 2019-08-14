@@ -168,7 +168,7 @@ variable "additional_tags" {
 
 #Call module
 module "Az-VirtualNetwork-Demo" {
-  source                      = "git::https://github.com/JamesDLD/terraform-azurerm-Az-VirtualNetwork.git"
+  source                      = "git::https://github.com/JamesDLD/terraform-azurerm-Az-VirtualNetwork.git?ref=0.1.0"
   net_prefix                  = "myproductvm-perimeter"
   network_resource_group_name = "infr-jdld-noprd-rg2"
   virtual_networks            = var.virtual_networks
@@ -179,7 +179,7 @@ module "Az-VirtualNetwork-Demo" {
 }
 
 module "Create-AzureRmLoadBalancer-Demo" {
-  source                 = "git::https://github.com/JamesDLD/terraform-azurerm-Az-LoadBalancer.git"
+  source                 = "git::https://github.com/JamesDLD/terraform-azurerm-Az-LoadBalancer.git?ref=0.1.0"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
