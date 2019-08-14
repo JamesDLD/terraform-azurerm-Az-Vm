@@ -1,13 +1,6 @@
 #Multi-stage YAML pipeline demo.
 name: $(BuildDefinitionName).$(DayOfYear)$(Rev:.r)
 
-schedules:
-- cron: "30 8 * * 4"
-  branches:
-    include:
-    - master
-  displayName: Weekly Thursday 8h30 am UTC build
-  always: true
 
 variables:
 - name: vmImageName
@@ -17,14 +10,15 @@ variables:
 - name: artifact_name
   value: Az-Vm
 - name: backend_and_main_secret_file_id
-  value: 'artik.json'
+  value: 'backend-main-jdld-1.json'
 
 resources:
   repositories:
     - repository: Yaml_Templates # identifier (A-Z, a-z, 0-9, and underscore)
-      type: git
-      name: network-poc/Yaml-Templates
-      ref: refs/tags/0.0.1  # ref name to use, defaults to 'refs/heads/master'
+      type: github
+      endpoint: JamesDLD  # name of the service connection to use (for non-Azure Repos types)
+      name: JamesDLD/terraform
+      #ref: refs/tags/0.0.1  # ref name to use, defaults to 'refs/heads/master'
 
 stages:
 - stage: Build
@@ -46,7 +40,7 @@ stages:
       inputs:
         secureFile: $(backend_and_main_secret_file_id)
 
-    - template: terraform.yml@Yaml_Templates
+    - template: pipeline/terraform.yml@Yaml_Templates
       parameters:
         version: $(terraform_version)
         path: './test1/'
@@ -75,7 +69,7 @@ stages:
         deploy:
           steps:
 
-          - template: terraform.yml@Yaml_Templates
+          - template: pipeline/terraform.yml@Yaml_Templates
             parameters:
               version: $(terraform_version)
               package_name: 'test1'
@@ -104,7 +98,7 @@ stages:
             inputs:
               secureFile: $(backend_and_main_secret_file_id)
 
-          - template: terraform.yml@Yaml_Templates
+          - template: pipeline/terraform.yml@Yaml_Templates
             parameters:
               version: $(terraform_version)
               package_name: 'test1'
