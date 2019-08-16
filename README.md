@@ -2,19 +2,13 @@ Test
 -----
 [![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/JamesDLD.terraform-azurerm-Az-Vm?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=15&branchName=master)
 
+Requirement
+-----
+Terraform v0.12.6 and above. 
+
 Usage
 -----
 ```hcl
-#Set the terraform backend
-terraform {
-  backend "azurerm" {
-    storage_account_name = "infrsand1vpcjdld1"
-    container_name       = "tfstate"
-    key                  = "Az-Vm.master.test.tfstate"
-    resource_group_name  = "infr-jdld-noprd-rg1"
-  }
-}
-
 #Set the Provider
 provider "azurerm" {
   tenant_id       = var.tenant_id
@@ -175,7 +169,8 @@ variable "additional_tags" {
 
 #Call module
 module "Az-VirtualNetwork-Demo" {
-  source                      = "git::https://github.com/JamesDLD/terraform-azurerm-Az-VirtualNetwork.git?ref=0.1.0"
+  source                      = "JamesDLD/Az-VirtualNetwork/azurerm"
+  version                     = "0.1.1"
   net_prefix                  = "myproductvm-perimeter"
   network_resource_group_name = "infr-jdld-noprd-rg2"
   virtual_networks            = var.virtual_networks
@@ -186,7 +181,8 @@ module "Az-VirtualNetwork-Demo" {
 }
 
 module "Create-AzureRmLoadBalancer-Demo" {
-  source                 = "git::https://github.com/JamesDLD/terraform-azurerm-Az-LoadBalancer.git?ref=0.1.0"
+  source                 = "JamesDLD/Az-LoadBalancer/azurerm"
+  version                = "0.1.1"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
@@ -198,7 +194,7 @@ module "Create-AzureRmLoadBalancer-Demo" {
 }
 
 module "Az-Vm-Demo" {
-  source                  = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git"
+  source                  = "JamesDLD/Az-Vm/azurerm"
   sa_bootdiag_storage_uri = "https://infrsand1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets_ids             = module.Az-VirtualNetwork-Demo.subnet_ids           #(Mandatory)
   linux_vms               = var.linux_vms                                      #(Mandatory)
