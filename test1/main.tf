@@ -179,11 +179,10 @@ module "Az-Vm-Demo" {
   admin_password          = "Myadmlogin_StoredInASecretFile?"
   internal_lb_backend_ids = module.Create-AzureRmLoadBalancer-Demo.lb_backend_ids #(Optional)
   vm_additional_tags      = var.additional_tags                                   #(Optional)
-  key_vault_name          = "leccaasgalqualkv1"                                   #(Optional)
-  key_vault_rgname        = "caas-infra1-svcd-gal-qual-rg1"                       #(Optional) Use the RG's location if not set
-
   #All other optional values
   /*
+  key_vault_name          = "leccaasgalqualkv1"                                   #(Optional)
+  key_vault_rgname        = "caas-infra1-svcd-gal-qual-rg1"                       #(Optional) Use the RG's location if not set
   vm_location                       = element(module.Az-VirtualNetwork-Demo.vnet_locations, 0) #(Optional) Use the RG's location if not set
   workspace_name                    = ""                                                       #(Optional)
   workspace_resource_rgname         = ""                                                       #(Optional) Use the RG's location if not set
