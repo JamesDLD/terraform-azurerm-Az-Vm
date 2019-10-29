@@ -195,7 +195,7 @@ module "Create-AzureRmLoadBalancer-Demo" {
 
 module "Az-Vm-Demo" {
   source                  = "JamesDLD/Az-Vm/azurerm"
-  sa_bootdiag_storage_uri = "https://infrsand1vpcjdld1.blob.core.windows.net/" #(Mandatory)
+  sa_bootdiag_storage_uri = "https://infrsdbx1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets_ids             = module.Az-VirtualNetwork-Demo.subnet_ids           #(Mandatory)
   linux_vms               = var.linux_vms                                      #(Mandatory)
   windows_vms             = var.windows_vms                                    #(Mandatory)
