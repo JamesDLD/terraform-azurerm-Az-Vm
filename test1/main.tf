@@ -131,7 +131,7 @@ variable "additional_tags" {
 #Call native Terraform resources
 
 data "azurerm_resource_group" "rg" {
-  name = "infr-jdld-noprd-rg2"
+  name = "infr-jdld-noprd-rg1"
 }
 
 resource "azurerm_virtual_network" "Demo" {

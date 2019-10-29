@@ -172,7 +172,7 @@ module "Az-VirtualNetwork-Demo" {
   source                      = "JamesDLD/Az-VirtualNetwork/azurerm"
   version                     = "0.1.1"
   net_prefix                  = "myproductvm-perimeter"
-  network_resource_group_name = "infr-jdld-noprd-rg2"
+  network_resource_group_name = "infr-jdld-noprd-rg1"
   virtual_networks            = var.virtual_networks
   subnets                     = var.subnets
   route_tables                = []
@@ -187,7 +187,7 @@ module "Create-AzureRmLoadBalancer-Demo" {
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
   lb_location            = element(module.Az-VirtualNetwork-Demo.vnet_locations, 0)
-  lb_resource_group_name = "infr-jdld-noprd-rg2"
+  lb_resource_group_name = "infr-jdld-noprd-rg1"
   Lb_sku                 = "basic"
   subnets_ids            = module.Az-VirtualNetwork-Demo.subnet_ids
   lb_additional_tags     = var.additional_tags
@@ -199,7 +199,7 @@ module "Az-Vm-Demo" {
   subnets_ids             = module.Az-VirtualNetwork-Demo.subnet_ids           #(Mandatory)
   linux_vms               = var.linux_vms                                      #(Mandatory)
   windows_vms             = var.windows_vms                                    #(Mandatory)
-  vm_resource_group_name  = "infr-jdld-noprd-rg2"
+  vm_resource_group_name  = "infr-jdld-noprd-rg1"
   vm_prefix               = "myproductvm" #(Optional)
   admin_username          = "myadmlogin"
   admin_password          = "Myadmlogin_StoredInASecretFile?"
