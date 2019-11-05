@@ -145,7 +145,7 @@ locals {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_internal_backend_pools" {
-  depends_on            = [azurerm_network_interface.linux_nics]
+  depends_on            = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each              = local.linux_nics_with_internal_bp
   network_interface_id  = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
   ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
@@ -168,7 +168,7 @@ locals {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_public_backend_pools" {
-  depends_on            = [azurerm_network_interface.linux_nics]
+  depends_on            = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each              = local.linux_nics_with_public_bp
   network_interface_id  = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
   ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
@@ -385,7 +385,7 @@ locals {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_internal_backend_pools" {
-  depends_on            = [azurerm_network_interface.windows_nics]
+  depends_on            = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each              = local.windows_nics_with_internal_bp
   network_interface_id  = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
   ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
@@ -408,7 +408,7 @@ locals {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_public_backend_pools" {
-  depends_on            = [azurerm_network_interface.windows_nics]
+  depends_on            = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each              = local.windows_nics_with_public_bp
   network_interface_id  = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
   ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
