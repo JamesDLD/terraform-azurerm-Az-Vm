@@ -169,6 +169,7 @@ module "Create-AzureRmLoadBalancer-Demo" {
 
 module "Az-Vm-Demo" {
   #source                  = "JamesDLD/Az-Vm/azurerm"
+  #version                 = "0.1.2"
   source                  = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
   sa_bootdiag_storage_uri = "https://infrasdbx1vpcjdld1.blob.core.windows.net/"   #(Mandatory)
   subnets_ids             = [for x in azurerm_virtual_network.Demo.subnet : x.id] #(Mandatory)
