@@ -1,12 +1,19 @@
+Test
+-----
+[![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/JamesDLD.terraform-azurerm-Az-Vm?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=15&branchName=master)
+
+Requirement
+-----
+Terraform v0.12.6 and above. 
+
+Usage
+-----
+```hcl
 #Set the terraform backend
 terraform {
-  backend "azurerm" {
-    storage_account_name = "infrasdbx1vpcjdld1"
-    container_name       = "tfstate"
-    key                  = "Az-Vm.master.test.tfstate"
-    resource_group_name  = "infr-jdld-noprd-rg1"
-  }
+  backend "local" {} #Using a local backend just for the demo, the reco is to use a remote backend, see : https://jamesdld.github.io/terraform/Best-Practice/BestPractice-1/
 }
+
 
 #Set the Provider
 provider "azurerm" {
@@ -169,6 +176,7 @@ module "Create-AzureRmLoadBalancer-Demo" {
 
 module "Az-Vm-Demo" {
   source                  = "JamesDLD/Az-Vm/azurerm"
+  version                 = "0.1.2"
   sa_bootdiag_storage_uri = "https://infrasdbx1vpcjdld1.blob.core.windows.net/"   #(Mandatory)
   subnets_ids             = [for x in azurerm_virtual_network.Demo.subnet : x.id] #(Mandatory)
   linux_vms               = var.linux_vms                                         #(Mandatory)
@@ -196,3 +204,4 @@ module "Az-Vm-Demo" {
 
 }
 
+```
