@@ -73,9 +73,7 @@ resource "azurerm_virtual_machine_extension" "OmsAgentForLinux" {
   depends_on                 = [azurerm_log_analytics_solution.ServiceMap]
   for_each                   = local.linux_vms_with_log_analytics_dependencies
   name                       = "OmsAgentForLinux"
-  location                   = local.location
-  resource_group_name        = var.vm_resource_group_name
-  virtual_machine_name       = [for x in azurerm_virtual_machine.linux_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id         = [for x in azurerm_virtual_machine.linux_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher                  = var.OmsAgentForLinux["publisher"]
   type                       = var.OmsAgentForLinux["type"]
   type_handler_version       = var.OmsAgentForLinux["type_handler_version"]
@@ -97,9 +95,7 @@ resource "azurerm_virtual_machine_extension" "DependencyAgentLinux" {
   depends_on                 = [azurerm_virtual_machine_extension.OmsAgentForLinux]
   for_each                   = local.linux_vms_with_log_analytics_dependencies
   name                       = "DependencyAgent"
-  location                   = local.location
-  resource_group_name        = var.vm_resource_group_name
-  virtual_machine_name       = [for x in azurerm_virtual_machine.linux_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id         = [for x in azurerm_virtual_machine.linux_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher                  = var.DependencyAgentLinux["publisher"]
   type                       = var.DependencyAgentLinux["type"]
   type_handler_version       = var.DependencyAgentLinux["type_handler_version"]
@@ -115,7 +111,6 @@ resource "azurerm_network_interface" "linux_nics" {
   name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}-nic1"
   location                      = local.location
   resource_group_name           = var.vm_resource_group_name
-  network_security_group_id     = lookup(each.value, "security_group_iteration", null) == null ? null : element(var.nsgs_ids, lookup(each.value, "security_group_iteration"))
   internal_dns_name_label       = lookup(each.value, "internal_dns_name_label", null)
   enable_ip_forwarding          = lookup(each.value, "enable_ip_forwarding", null)
   enable_accelerated_networking = lookup(each.value, "enable_accelerated_networking", null)
@@ -123,13 +118,32 @@ resource "azurerm_network_interface" "linux_nics" {
 
   ip_configuration {
     name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}-nic1-CFG"
-    subnet_id                     = lookup(each.value, "subnet_iteration", null) == null ? null : element(var.subnets_ids, lookup(each.value, "subnet_iteration"))
+    subnet_id                     = lookup(var.subnets, each.value["snet_key"], null)["id"]
     private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "dynamic" : "static"
     private_ip_address            = lookup(each.value, "static_ip", null)
-    public_ip_address_id          = lookup(each.value, "public_ip_iteration", null) == null ? null : element(var.public_ip_ids, lookup(each.value, "public_ip_iteration"))
+    public_ip_address_id          = lookup(each.value, "public_ip_key", null) == null ? null : lookup(var.public_ips, each.value["public_ip_key"], null)["id"]
   }
 
   tags = local.tags
+}
+
+# -
+# - Linux Network interfaces - Network Security Groups
+# -
+
+locals {
+  linux_nics_with_nsg_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "nsg_key", null) != null]
+  linux_nics_with_nsg_values = [for x in var.linux_vms : {
+    nsg_key = x.nsg_key
+  } if lookup(x, "nsg_key", null) != null]
+  linux_nics_with_nsg = zipmap(local.linux_nics_with_nsg_keys, local.linux_nics_with_nsg_values)
+}
+
+resource "azurerm_network_interface_security_group_association" "linux_nics_with_nsg" {
+  depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                  = local.linux_nics_with_nsg
+  network_interface_id      = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
 }
 
 # -
@@ -137,22 +151,19 @@ resource "azurerm_network_interface" "linux_nics" {
 # -
 
 locals {
-  linux_nics_with_internal_bp_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "internal_lb_iteration", null) != null]
+  linux_nics_with_internal_bp_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "internal_lb_key", null) != null]
   linux_nics_with_internal_bp_values = [for x in var.linux_vms : {
-    internal_lb_iteration = x.internal_lb_iteration
-  } if lookup(x, "internal_lb_iteration", null) != null]
+    internal_lb_key = x.internal_lb_key
+  } if lookup(x, "internal_lb_key", null) != null]
   linux_nics_with_internal_bp = zipmap(local.linux_nics_with_internal_bp_keys, local.linux_nics_with_internal_bp_values)
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_internal_backend_pools" {
-  depends_on            = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each              = local.linux_nics_with_internal_bp
-  network_interface_id  = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
-  backend_address_pool_id = element(
-    var.internal_lb_backend_ids,
-    each.value["internal_lb_iteration"]
-  )
+  depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                = local.linux_nics_with_internal_bp
+  network_interface_id    = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  ip_configuration_name   = "${var.vm_prefix}${each.key}-nic1-CFG"
+  backend_address_pool_id = lookup(var.internal_lb_backend_address_pools, each.value["internal_lb_key"], null)["id"]
 }
 
 # -
@@ -160,22 +171,19 @@ resource "azurerm_network_interface_backend_address_pool_association" "linux_nic
 # -
 
 locals {
-  linux_nics_with_public_bp_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_iteration", null) != null]
+  linux_nics_with_public_bp_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_key", null) != null]
   linux_nics_with_public_bp_values = [for x in var.linux_vms : {
-    public_lb_iteration = x.public_lb_iteration
-  } if lookup(x, "public_lb_iteration", null) != null]
+    public_lb_key = x.public_lb_key
+  } if lookup(x, "public_lb_key", null) != null]
   linux_nics_with_public_bp = zipmap(local.linux_nics_with_public_bp_keys, local.linux_nics_with_public_bp_values)
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_public_backend_pools" {
-  depends_on            = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each              = local.linux_nics_with_public_bp
-  network_interface_id  = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
-  backend_address_pool_id = element(
-    var.public_lb_backend_ids,
-    each.value["public_lb_iteration"]
-  )
+  depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                = local.linux_nics_with_public_bp
+  network_interface_id    = [for x in azurerm_network_interface.linux_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  ip_configuration_name   = "${var.vm_prefix}${each.key}-nic1-CFG"
+  backend_address_pool_id = lookup(var.public_lb_backend_address_pools, each.value["public_lb_key"], null)["id"]
 }
 
 # -
@@ -202,7 +210,7 @@ resource "azurerm_virtual_machine" "linux_vms" {
     disable_password_authentication = lookup(each.value, "disable_password_authentication", false)
 
     ssh_keys {
-      path     = "/home/${var.admin_username}/.ssh/authorized_keys"
+      path     = "/home/${lookup(each.value, "admin_username", var.admin_username)}/.ssh/authorized_keys"
       key_data = var.ssh_key
     }
   }
@@ -240,8 +248,8 @@ resource "azurerm_virtual_machine" "linux_vms" {
 
   os_profile {
     computer_name  = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}"
-    admin_username = var.admin_username
-    admin_password = var.admin_password
+    admin_username = lookup(each.value, "admin_username", var.admin_username)
+    admin_password = lookup(each.value, "admin_password", var.admin_password)
   }
 
   tags = local.tags
@@ -262,9 +270,7 @@ locals {
 resource "azurerm_virtual_machine_extension" "linux_vms_with_enable_enable_ip_forwarding" {
   for_each             = local.linux_vms_with_enable_enable_ip_forwarding
   name                 = "enable_accelerated_networking-for-${var.vm_prefix}${each.key}"
-  location             = local.location
-  resource_group_name  = [for x in azurerm_network_interface.linux_nics : x.resource_group_name if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  virtual_machine_name = [for x in azurerm_virtual_machine.linux_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id   = [for x in azurerm_virtual_machine.linux_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher            = "Microsoft.Azure.Extensions"
   type                 = "CustomScript"
   type_handler_version = "2.0"
@@ -291,7 +297,7 @@ locals {
   linux_vms_to_backup = zipmap(local.linux_vms_to_backup_keys, local.linux_vms_to_backup_values)
 }
 
-resource "azurerm_recovery_services_protected_vm" "linux_vm_resources_to_backup" {
+resource "azurerm_backup_protected_vm" "linux_vm_resources_to_backup" {
   for_each            = local.linux_vms_to_backup
   resource_group_name = element(data.azurerm_recovery_services_vault.vault.*.resource_group_name, 0)
   recovery_vault_name = element(data.azurerm_recovery_services_vault.vault.*.name, 0)
@@ -313,9 +319,7 @@ resource "azurerm_virtual_machine_extension" "OmsAgentForWindows" {
   depends_on                 = [azurerm_log_analytics_solution.ServiceMap]
   for_each                   = local.windows_vms_with_log_analytics_dependencies
   name                       = "OmsAgentForWindows"
-  location                   = local.location
-  resource_group_name        = var.vm_resource_group_name
-  virtual_machine_name       = [for x in azurerm_virtual_machine.windows_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id         = [for x in azurerm_virtual_machine.windows_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher                  = var.OmsAgentForWindows["publisher"]
   type                       = var.OmsAgentForWindows["type"]
   type_handler_version       = var.OmsAgentForWindows["type_handler_version"]
@@ -337,9 +341,7 @@ resource "azurerm_virtual_machine_extension" "DependencyAgentWindows" {
   depends_on                 = [azurerm_virtual_machine_extension.OmsAgentForWindows]
   for_each                   = local.windows_vms_with_log_analytics_dependencies
   name                       = "DependencyAgent"
-  location                   = local.location
-  resource_group_name        = var.vm_resource_group_name
-  virtual_machine_name       = [for x in azurerm_virtual_machine.windows_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id         = [for x in azurerm_virtual_machine.windows_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher                  = var.DependencyAgentWindows["publisher"]
   type                       = var.DependencyAgentWindows["type"]
   type_handler_version       = var.DependencyAgentWindows["type_handler_version"]
@@ -355,7 +357,6 @@ resource "azurerm_network_interface" "windows_nics" {
   name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}-nic1"
   location                      = local.location
   resource_group_name           = var.vm_resource_group_name
-  network_security_group_id     = lookup(each.value, "security_group_iteration", null) == null ? null : element(var.nsgs_ids, lookup(each.value, "security_group_iteration"))
   internal_dns_name_label       = lookup(each.value, "internal_dns_name_label", null)
   enable_ip_forwarding          = lookup(each.value, "enable_ip_forwarding", null)
   enable_accelerated_networking = lookup(each.value, "enable_accelerated_networking", null)
@@ -363,13 +364,32 @@ resource "azurerm_network_interface" "windows_nics" {
 
   ip_configuration {
     name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}-nic1-CFG"
-    subnet_id                     = lookup(each.value, "subnet_iteration", null) == null ? null : element(var.subnets_ids, lookup(each.value, "subnet_iteration"))
+    subnet_id                     = lookup(var.subnets, each.value["snet_key"], null)["id"]
     private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "dynamic" : "static"
     private_ip_address            = lookup(each.value, "static_ip", null)
-    public_ip_address_id          = lookup(each.value, "public_ip_iteration", null) == null ? null : element(var.public_ip_ids, lookup(each.value, "public_ip_iteration"))
+    public_ip_address_id          = lookup(each.value, "public_ip_key", null) == null ? null : lookup(var.public_ips, each.value["public_ip_key"], null)["id"]
   }
 
   tags = local.tags
+}
+
+# -
+# - Windows Network interfaces - Network Security Groups
+# -
+
+locals {
+  windows_nics_with_nsg_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "nsg_key", null) != null]
+  windows_nics_with_nsg_values = [for x in var.windows_vms : {
+    nsg_key = x.nsg_key
+  } if lookup(x, "nsg_key", null) != null]
+  windows_nics_with_nsg = zipmap(local.windows_nics_with_nsg_keys, local.windows_nics_with_nsg_values)
+}
+
+resource "azurerm_network_interface_security_group_association" "windows_nics_with_nsg" {
+  depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                  = local.windows_nics_with_nsg
+  network_interface_id      = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
 }
 
 # -
@@ -377,22 +397,19 @@ resource "azurerm_network_interface" "windows_nics" {
 # -
 
 locals {
-  windows_nics_with_internal_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "internal_lb_iteration", null) != null]
+  windows_nics_with_internal_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "internal_lb_key", null) != null]
   windows_nics_with_internal_bp_values = [for x in var.windows_vms : {
-    internal_lb_iteration = x.internal_lb_iteration
-  } if lookup(x, "internal_lb_iteration", null) != null]
+    internal_lb_key = x.internal_lb_key
+  } if lookup(x, "internal_lb_key", null) != null]
   windows_nics_with_internal_bp = zipmap(local.windows_nics_with_internal_bp_keys, local.windows_nics_with_internal_bp_values)
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_internal_backend_pools" {
-  depends_on            = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each              = local.windows_nics_with_internal_bp
-  network_interface_id  = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
-  backend_address_pool_id = element(
-    var.internal_lb_backend_ids,
-    each.value["internal_lb_iteration"]
-  )
+  depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                = local.windows_nics_with_internal_bp
+  network_interface_id    = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  ip_configuration_name   = "${var.vm_prefix}${each.key}-nic1-CFG"
+  backend_address_pool_id = lookup(var.internal_lb_backend_address_pools, each.value["internal_lb_key"], null)["id"]
 }
 
 # -
@@ -400,22 +417,19 @@ resource "azurerm_network_interface_backend_address_pool_association" "windows_n
 # -
 
 locals {
-  windows_nics_with_public_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_iteration", null) != null]
+  windows_nics_with_public_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_key", null) != null]
   windows_nics_with_public_bp_values = [for x in var.windows_vms : {
-    public_lb_iteration = x.public_lb_iteration
-  } if lookup(x, "public_lb_iteration", null) != null]
+    public_lb_key = x.public_lb_key
+  } if lookup(x, "public_lb_key", null) != null]
   windows_nics_with_public_bp = zipmap(local.windows_nics_with_public_bp_keys, local.windows_nics_with_public_bp_values)
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_public_backend_pools" {
-  depends_on            = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each              = local.windows_nics_with_public_bp
-  network_interface_id  = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  ip_configuration_name = "${var.vm_prefix}${each.key}-nic1-CFG"
-  backend_address_pool_id = element(
-    var.public_lb_backend_ids,
-    each.value["public_lb_iteration"]
-  )
+  depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  for_each                = local.windows_nics_with_public_bp
+  network_interface_id    = [for x in azurerm_network_interface.windows_nics : x.id if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
+  ip_configuration_name   = "${var.vm_prefix}${each.key}-nic1-CFG"
+  backend_address_pool_id = lookup(var.public_lb_backend_address_pools, each.value["public_lb_key"], null)["id"]
 }
 
 # -
@@ -474,8 +488,8 @@ resource "azurerm_virtual_machine" "windows_vms" {
 
   os_profile {
     computer_name  = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}"
-    admin_username = var.admin_username
-    admin_password = var.admin_password
+    admin_username = lookup(each.value, "admin_username", var.admin_username)
+    admin_password = lookup(each.value, "admin_password", var.admin_password)
   }
 
   tags = local.tags
@@ -511,13 +525,11 @@ locals {
 resource "azurerm_virtual_machine_extension" "windows_vms_with_enable_enable_ip_forwarding" {
   for_each             = local.windows_vms_with_enable_enable_ip_forwarding
   name                 = "enable_accelerated_networking-for-${var.vm_prefix}${each.key}"
-  location             = local.location
-  resource_group_name  = [for x in azurerm_network_interface.windows_nics : x.resource_group_name if x.name == "${var.vm_prefix}${each.key}-nic1"][0]
-  virtual_machine_name = [for x in azurerm_virtual_machine.windows_vms : x.name if x.name == "${var.vm_prefix}${each.key}"][0]
+  virtual_machine_id   = [for x in azurerm_virtual_machine.windows_vms : x.id if x.name == "${var.vm_prefix}${each.key}"][0]
   publisher            = "Microsoft.CPlat.Core"
   type                 = "RunCommandWindows"
   type_handler_version = "1.1"
-  settings             = "${jsonencode(local.enable_ip_forwarding_on_windows)}"
+  settings             = jsonencode(local.enable_ip_forwarding_on_windows)
   tags                 = local.tags
 }
 
@@ -533,7 +545,7 @@ locals {
   windows_vms_to_backup = zipmap(local.windows_vms_to_backup_keys, local.windows_vms_to_backup_values)
 }
 
-resource "azurerm_recovery_services_protected_vm" "windows_vm_resources_to_backup" {
+resource "azurerm_backup_protected_vm" "windows_vm_resources_to_backup" {
   for_each            = local.windows_vms_to_backup
   resource_group_name = element(data.azurerm_recovery_services_vault.vault.*.resource_group_name, 0)
   recovery_vault_name = element(data.azurerm_recovery_services_vault.vault.*.name, 0)

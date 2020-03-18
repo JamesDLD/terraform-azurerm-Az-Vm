@@ -59,10 +59,12 @@ variable "vm_additional_tags" {
 
 variable "admin_username" {
   description = "Specifies the name of the local administrator account."
+  default     = ""
 }
 
 variable "admin_password" {
   description = "The password associated with the local administrator account."
+  default     = ""
 }
 
 variable "ssh_key" {
@@ -124,33 +126,34 @@ variable "OmsAgentForWindows" {
     auto_upgrade_minor_version = "true"
   }
 }
-variable "subnets_ids" {
-  description = "Network Interfaces subnets list."
-  type        = list(string)
+
+variable "subnets" {
+  description = "A map of subnet with keys containing the subnet 'id'."
+  type        = any
 }
 
-variable "internal_lb_backend_ids" {
-  description = "Network Interfaces internal load balancers backend ids list."
-  type        = list(string)
-  default     = []
+variable "internal_lb_backend_address_pools" {
+  description = "A map of Network Interfaces internal load balancers containing the backend 'id'."
+  type        = any
+  default     = {}
 }
 
-variable "public_lb_backend_ids" {
-  description = "Network Interfaces public load balancers backend ids list."
-  type        = list(string)
-  default     = []
+variable "public_lb_backend_address_pools" {
+  description = "A map of Network Interfaces public load balancers containing the backend 'id'."
+  type        = any
+  default     = {}
 }
 
-variable "nsgs_ids" {
-  description = "Network Interfaces network security ids."
-  type        = list(string)
-  default     = []
+variable "network_security_groups" {
+  description = "A map of network security groups containing their 'id'."
+  type        = any
+  default     = {}
 }
 
-variable "public_ip_ids" {
-  description = "Network Interfaces public ip ids."
-  type        = list(string)
-  default     = []
+variable "public_ips" {
+  description = "A map of Public Ips containing their 'id'."
+  type        = any
+  default     = {}
 }
 
 # -
