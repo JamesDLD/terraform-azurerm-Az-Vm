@@ -111,6 +111,7 @@ variable "windows_vms" {
     vm1 = {
       suffix_name                       = "rds"                             #(Mandatory) suffix of the vm
       id                                = "1"                               #(Mandatory) Id of the VM
+      license_type                      = "Windows_Server"                  #(Optional) Specifies the BYOL Type for this Virtual Machine. This is only applicable to Windows Virtual Machines. Possible values are Windows_Client and Windows_Server.
       admin_username                    = "myadmlogin"                      #(Optional) Use the one in the vm map if not provided
       admin_password                    = "Myadmlogin_StoredInASecretFile?" #(Optional) Use the one in the vm map if not provided, #Warning : All arguments including the administrator login and password will be stored in the raw state as plain-text. Read more about sensitive data in state : https://www.terraform.io/docs/state/sensitive-data.html.
       storage_image_reference_offer     = "WindowsServer"                   #(Optional)

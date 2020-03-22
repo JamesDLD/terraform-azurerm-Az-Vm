@@ -443,6 +443,7 @@ resource "azurerm_virtual_machine" "windows_vms" {
   network_interface_ids            = [lookup(azurerm_network_interface.windows_nics, each.key)["id"]]
   zones                            = lookup(each.value, "zones", null)
   vm_size                          = each.value["vm_size"]
+  license_type                     = lookup(each.value, "license_type", null) # (Optional) Specifies the BYOL Type for this Virtual Machine. This is only applicable to Windows Virtual Machines. Possible values are Windows_Client and Windows_Server.
   delete_os_disk_on_termination    = lookup(each.value, "delete_os_disk_on_termination", true)
   delete_data_disks_on_termination = lookup(each.value, "delete_data_disks_on_termination", true)
   boot_diagnostics {
