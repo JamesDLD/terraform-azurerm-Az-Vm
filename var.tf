@@ -18,12 +18,12 @@ variable "linux_storage_image_reference" {
 
 variable "linux_vms" {
   description = "Linux VMs list."
-  type        = map
+  type        = any
 }
 
 variable "windows_vms" {
   description = "Windows VMs list."
-  type        = map
+  type        = any
 }
 
 variable "windows_storage_image_reference" {
@@ -129,30 +129,30 @@ variable "OmsAgentForWindows" {
 
 variable "subnets" {
   description = "A map of subnet with keys containing the subnet 'id'."
-  type        = map
+  type        = any
 }
 
 variable "internal_lb_backend_address_pools" {
   description = "A map of Network Interfaces internal load balancers containing the backend 'id'."
-  type        = map
+  type        = any
   default     = {}
 }
 
 variable "public_lb_backend_address_pools" {
   description = "A map of Network Interfaces public load balancers containing the backend 'id'."
-  type        = map
+  type        = any
   default     = {}
 }
 
 variable "network_security_groups" {
   description = "A map of network security groups containing their 'id'."
-  type        = map
+  type        = any
   default     = {}
 }
 
 variable "public_ips" {
   description = "A map of Public Ips containing their 'id'."
-  type        = map
+  type        = any
   default     = {}
 }
 
