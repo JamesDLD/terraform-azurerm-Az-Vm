@@ -148,12 +148,12 @@ resource "azurerm_virtual_network" "Demo" {
 
   subnet {
     name           = "demo1"
-    address_prefix = "10.0.128.0/28"
+    address_prefixes = ["10.0.128.0/28"]
   }
 
   subnet {
     name           = "demo2"
-    address_prefix = "10.0.128.16/28"
+    address_prefixes = ["10.0.128.16/28"]
   }
 }
 
