@@ -4,8 +4,8 @@ Test
 
 Requirement
 -----
-- Terraform v0.12.23 and above. 
-- AzureRm provider version 2.1 and above.
+- Terraform v1.1.3 and above. 
+- AzureRm provider version v2.93 and above.
 
 Terraform resources used within the module
 -----
@@ -26,3 +26,4 @@ Examples
 | Name | Description |
 |------|-------------|
 | complete | Create the following objects : vnet, subnet, load balancer, linux and windows virtual machines. |
+| linux | Create a Linux VM 3 Data Disks mounted throught a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html). |

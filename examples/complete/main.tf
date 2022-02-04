@@ -14,7 +14,7 @@ provider "azurerm" {
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
-  version         = "~> 2.0"
+
   features {}
 }
 
@@ -140,7 +140,7 @@ data "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_virtual_network" "Demo" {
-  name                = "myproductvm-perimeter-npd-vnet1"
+  name                = "myproductvm-perimeter-npd-vnet0"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   address_space       = ["10.0.128.0/24", "198.18.2.0/24"]
@@ -158,7 +158,6 @@ resource "azurerm_virtual_network" "Demo" {
 }
 
 #Call module
-
 module "Create-AzureRmLoadBalancer-Demo" {
   source                 = "JamesDLD/Az-LoadBalancer/azurerm"
   version                = "0.2.0"
@@ -188,4 +187,3 @@ module "Az-Vm-Demo" {
   internal_lb_backend_address_pools = module.Create-AzureRmLoadBalancer-Demo.lb_backend_address_pools #(Optional)
   vm_additional_tags                = var.additional_tags                                             #(Optional)
 }
-

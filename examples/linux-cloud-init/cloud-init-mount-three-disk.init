@@ -1,0 +1,30 @@
+#cloud-config
+disk_setup:
+  /dev/disk/azure/scsi1/lun0:
+      table_type: gpt
+      layout: True
+      overwrite: True
+  /dev/disk/azure/scsi1/lun1:
+      table_type: gpt
+      layout: True
+      overwrite: True
+  /dev/disk/azure/scsi1/lun2:
+      table_type: gpt
+      layout: True
+      overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun0
+    partition: 1
+    filesystem: ext4
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+  - device: /dev/disk/azure/scsi1/lun2
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - ["/dev/disk/azure/scsi1/lun0-part1", "/${datadisk_lun_0_name}", auto, "defaults,noexec,nofail"]
+  - ["/dev/disk/azure/scsi1/lun1-part1", "/${datadisk_lun_1_name}", auto, "defaults,noexec,nofail"]
+  - ["/dev/disk/azure/scsi1/lun2-part1", "/${datadisk_lun_2_name}", auto, "defaults,noexec,nofail"]
