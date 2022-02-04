@@ -14,7 +14,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
-
   features {}
 }
 
@@ -175,7 +174,7 @@ module "Az-Vm-Demo" {
   source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
   #source = "../../"
   #source                  = "JamesDLD/Az-Vm/azurerm"
-  #version                 = "0.2.0"
+  #version                 = "0.3.0"
   sa_bootdiag_storage_uri           = "https://infrasdbx1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets                           = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   linux_vms                         = var.linux_vms   #(Mandatory)

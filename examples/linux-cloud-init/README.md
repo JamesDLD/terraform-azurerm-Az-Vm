@@ -4,7 +4,7 @@ Test
 
 Content
 -----
-Create a Linux VM 3 Data Disks mounted throught a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html).
+Create a Linux VM with 3 Data Disks mounted through a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html).
 
 | Description | Result |
 | ------------- | ------------- |

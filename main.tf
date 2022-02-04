@@ -154,27 +154,18 @@ resource "azurerm_network_interface_backend_address_pool_association" "linux_nic
   depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                = { for x, y in var.linux_vms : x => y if lookup(y, "internal_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.linux_nics[each.key].id
-  ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
+  ip_configuration_name   = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
   backend_address_pool_id = lookup(var.internal_lb_backend_address_pools, each.value["internal_lb_key"], null)["id"]
 }
 
 # -
 # - Linux Network interfaces - Public backend pools
 # -
-
-locals {
-  linux_nics_with_public_bp_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_key", null) != null]
-  linux_nics_with_public_bp_values = [for x in var.linux_vms : {
-    public_lb_key = x.public_lb_key
-  } if lookup(x, "public_lb_key", null) != null]
-  linux_nics_with_public_bp = zipmap(local.linux_nics_with_public_bp_keys, local.linux_nics_with_public_bp_values)
-}
-
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_public_backend_pools" {
   depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each                = local.linux_nics_with_public_bp
+  for_each                = { for x, y in var.linux_vms : x => y if lookup(y, "public_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.linux_nics[each.key].id
-  ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
+  ip_configuration_name   = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
   backend_address_pool_id = lookup(var.public_lb_backend_address_pools, each.value["public_lb_key"], null)["id"]
 }
 
