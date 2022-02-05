@@ -7,6 +7,8 @@ Requirement
 - Terraform v1.1.3 and above. 
 - AzureRm provider version v2.93 and above.
 
+Note : For VM Availability make sure to consider [SLA for Virtual Machines](https://azure.microsoft.com/en-us/support/legal/sla/virtual-machines/v1_9/?WT.mc_id=AZ-MVP-5003548)
+
 Terraform resources used within the module
 -----
 | Resource | Description |
