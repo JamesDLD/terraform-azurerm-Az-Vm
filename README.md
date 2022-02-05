@@ -26,4 +26,4 @@ Examples
 | Name | Description |
 |------|-------------|
 | complete | Create the following objects : vnet, subnet, load balancer, linux and windows virtual machines. |
-| linux | Create a Linux VM with 3 Data Disks mounted through a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html). |
+| linux-cloud-init | Create a Linux VM with 3 Data Disks mounted through a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html). ![mounted_disk](https://raw.githubusercontent.com/JamesDLD/terraform-azurerm-Az-Vm/master/images/mounted_disk.png) |

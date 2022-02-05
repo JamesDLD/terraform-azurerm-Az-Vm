@@ -8,7 +8,7 @@ Create a Linux VM with 3 Data Disks mounted through a [cloud init file](https://
 
 | Description | Result |
 | ------------- | ------------- |
-| We are using the following [cloud init file : cloud-init-mount-three-disk.init](https://github.com/JamesDLD/terraform-azurerm-Az-Vm/blob/master/examples/linux-cloud-init/cloud-init-mount-three-disk.init)  | ![mounted_disk](https://github.com/JamesDLD/terraform-azurerm-Az-Vm/blob/master/images/mounted_disk.png) |
+| We are using the following [cloud init file : cloud-init-mount-three-disk.init](https://github.com/JamesDLD/terraform-azurerm-Az-Vm/blob/master/examples/linux-cloud-init/cloud-init-mount-three-disk.init)  | ![mounted_disk](https://raw.githubusercontent.com/JamesDLD/terraform-azurerm-Az-Vm/master/images/mounted_disk.png) |
 
 
 Requirement
