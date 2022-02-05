@@ -9,5 +9,4 @@
 .terraform/
 
 # Secret files
-**/secret/*.json
-**/secret/*.tfvars
+**/secret/*

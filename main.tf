@@ -35,7 +35,6 @@ locals {
 # -
 # - Records secret in the Key Vault
 # -
-
 resource "azurerm_key_vault_secret" "admin_username" {
   count        = var.key_vault_name == "" ? 0 : 1
   name         = var.admin_username
@@ -46,7 +45,6 @@ resource "azurerm_key_vault_secret" "admin_username" {
 # -
 # - Log Monitor
 # -
-
 resource "azurerm_log_analytics_solution" "ServiceMap" {
   count                 = var.workspace_name == "" || var.enable_service_map != true ? 0 : 1
   solution_name         = "ServiceMap"
@@ -64,15 +62,9 @@ resource "azurerm_log_analytics_solution" "ServiceMap" {
 # -
 # - Log Monitor for Linux
 # -
-locals {
-  linux_vms_with_log_analytics_dependencies_keys   = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if var.enable_log_analytics_dependencies == true]
-  linux_vms_with_log_analytics_dependencies_values = [for x in var.linux_vms : { enable_log_analytics_dependencies = var.enable_log_analytics_dependencies } if var.enable_log_analytics_dependencies == true]
-  linux_vms_with_log_analytics_dependencies        = zipmap(local.linux_vms_with_log_analytics_dependencies_keys, local.linux_vms_with_log_analytics_dependencies_values)
-}
-
 resource "azurerm_virtual_machine_extension" "OmsAgentForLinux" {
   depends_on                 = [azurerm_log_analytics_solution.ServiceMap]
-  for_each                   = local.linux_vms_with_log_analytics_dependencies
+  for_each                   = { for x, y in var.linux_vms : x => y if var.enable_log_analytics_dependencies == true }
   name                       = "OmsAgentForLinux"
   virtual_machine_id         = azurerm_virtual_machine.linux_vms[each.key].id
   publisher                  = var.OmsAgentForLinux["publisher"]
@@ -94,7 +86,7 @@ PROTECTED_SETTINGS
 
 resource "azurerm_virtual_machine_extension" "DependencyAgentLinux" {
   depends_on                 = [azurerm_virtual_machine_extension.OmsAgentForLinux]
-  for_each                   = local.linux_vms_with_log_analytics_dependencies
+  for_each                   = { for x, y in var.linux_vms : x => y if var.enable_log_analytics_dependencies == true }
   name                       = "DependencyAgent"
   virtual_machine_id         = azurerm_virtual_machine.linux_vms[each.key].id
   publisher                  = var.DependencyAgentLinux["publisher"]
@@ -131,18 +123,9 @@ resource "azurerm_network_interface" "linux_nics" {
 # -
 # - Linux Network interfaces - Network Security Groups
 # -
-
-locals {
-  linux_nics_with_nsg_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "nsg_key", null) != null]
-  linux_nics_with_nsg_values = [for x in var.linux_vms : {
-    nsg_key = x.nsg_key
-  } if lookup(x, "nsg_key", null) != null]
-  linux_nics_with_nsg = zipmap(local.linux_nics_with_nsg_keys, local.linux_nics_with_nsg_values)
-}
-
 resource "azurerm_network_interface_security_group_association" "linux_nics_with_nsg" {
   depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each                  = local.linux_nics_with_nsg
+  for_each                  = { for x, y in var.linux_vms : x => y if lookup(y, "nsg_key", null) == null ? false : true }
   network_interface_id      = azurerm_network_interface.linux_nics[each.key].id
   network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
 }
@@ -267,16 +250,8 @@ SETTINGS
 # -
 # - Linux Virtual Machines Backup
 # -
-locals {
-  linux_vms_to_backup_keys = [for x in var.linux_vms : "${x.suffix_name}${x.id}" if lookup(x, "backup_policy_name", null) != null && var.recovery_services_vault_name != ""]
-  linux_vms_to_backup_values = [for x in var.linux_vms : {
-    backup_policy_name = x.backup_policy_name
-  } if lookup(x, "backup_policy_name", null) != null && var.recovery_services_vault_name != ""]
-  linux_vms_to_backup = zipmap(local.linux_vms_to_backup_keys, local.linux_vms_to_backup_values)
-}
-
 resource "azurerm_backup_protected_vm" "linux_vm_resources_to_backup" {
-  for_each            = local.linux_vms_to_backup
+  for_each            = { for x, y in var.linux_vms : x => y if lookup(y, "backup_policy_name", null) != null && var.recovery_services_vault_name != "" }
   resource_group_name = element(data.azurerm_recovery_services_vault.vault.*.resource_group_name, 0)
   recovery_vault_name = element(data.azurerm_recovery_services_vault.vault.*.name, 0)
   source_vm_id        = azurerm_virtual_machine.linux_vms[each.key].id
@@ -286,15 +261,9 @@ resource "azurerm_backup_protected_vm" "linux_vm_resources_to_backup" {
 # -
 # - Log Monitor for Windows
 # -
-locals {
-  windows_vms_with_log_analytics_dependencies_keys   = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if var.enable_log_analytics_dependencies == true]
-  windows_vms_with_log_analytics_dependencies_values = [for x in var.windows_vms : { enable_log_analytics_dependencies = var.enable_log_analytics_dependencies } if var.enable_log_analytics_dependencies == true]
-  windows_vms_with_log_analytics_dependencies        = zipmap(local.windows_vms_with_log_analytics_dependencies_keys, local.windows_vms_with_log_analytics_dependencies_values)
-}
-
 resource "azurerm_virtual_machine_extension" "OmsAgentForWindows" {
   depends_on                 = [azurerm_log_analytics_solution.ServiceMap]
-  for_each                   = local.windows_vms_with_log_analytics_dependencies
+  for_each                   = { for x, y in var.windows_vms : x => y if var.enable_log_analytics_dependencies == true }
   name                       = "OmsAgentForWindows"
   virtual_machine_id         = azurerm_virtual_machine.windows_vms[each.key].id
   publisher                  = var.OmsAgentForWindows["publisher"]
@@ -316,7 +285,7 @@ PROTECTED_SETTINGS
 
 resource "azurerm_virtual_machine_extension" "DependencyAgentWindows" {
   depends_on                 = [azurerm_virtual_machine_extension.OmsAgentForWindows]
-  for_each                   = local.windows_vms_with_log_analytics_dependencies
+  for_each                   = { for x, y in var.windows_vms : x => y if var.enable_log_analytics_dependencies == true }
   name                       = "DependencyAgent"
   virtual_machine_id         = azurerm_virtual_machine.windows_vms[each.key].id
   publisher                  = var.DependencyAgentWindows["publisher"]
@@ -353,18 +322,9 @@ resource "azurerm_network_interface" "windows_nics" {
 # -
 # - Windows Network interfaces - Network Security Groups
 # -
-
-locals {
-  windows_nics_with_nsg_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "nsg_key", null) != null]
-  windows_nics_with_nsg_values = [for x in var.windows_vms : {
-    nsg_key = x.nsg_key
-  } if lookup(x, "nsg_key", null) != null]
-  windows_nics_with_nsg = zipmap(local.windows_nics_with_nsg_keys, local.windows_nics_with_nsg_values)
-}
-
 resource "azurerm_network_interface_security_group_association" "windows_nics_with_nsg" {
   depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each                  = local.windows_nics_with_nsg
+  for_each                  = { for x, y in var.windows_vms : x => y if lookup(y, "nsg_key", null) == null ? false : true }
   network_interface_id      = azurerm_network_interface.windows_nics[each.key].id
   network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
 }
@@ -372,18 +332,9 @@ resource "azurerm_network_interface_security_group_association" "windows_nics_wi
 # -
 # - Windows Network interfaces - Internal backend pools
 # -
-
-locals {
-  windows_nics_with_internal_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "internal_lb_key", null) != null]
-  windows_nics_with_internal_bp_values = [for x in var.windows_vms : {
-    internal_lb_key = x.internal_lb_key
-  } if lookup(x, "internal_lb_key", null) != null]
-  windows_nics_with_internal_bp = zipmap(local.windows_nics_with_internal_bp_keys, local.windows_nics_with_internal_bp_values)
-}
-
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_internal_backend_pools" {
   depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each                = local.windows_nics_with_internal_bp
+  for_each                = { for x, y in var.windows_vms : x => y if lookup(y, "internal_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.windows_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
   backend_address_pool_id = lookup(var.internal_lb_backend_address_pools, each.value["internal_lb_key"], null)["id"]
@@ -392,18 +343,9 @@ resource "azurerm_network_interface_backend_address_pool_association" "windows_n
 # -
 # - Windows Network interfaces - Public backend pools
 # -
-
-locals {
-  windows_nics_with_public_bp_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "public_lb_key", null) != null]
-  windows_nics_with_public_bp_values = [for x in var.windows_vms : {
-    public_lb_key = x.public_lb_key
-  } if lookup(x, "public_lb_key", null) != null]
-  windows_nics_with_public_bp = zipmap(local.windows_nics_with_public_bp_keys, local.windows_nics_with_public_bp_values)
-}
-
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_public_backend_pools" {
   depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
-  for_each                = local.windows_nics_with_public_bp
+  for_each                = { for x, y in var.windows_vms : x => y if lookup(y, "public_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.windows_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
   backend_address_pool_id = lookup(var.public_lb_backend_address_pools, each.value["public_lb_key"], null)["id"]
@@ -491,17 +433,8 @@ locals {
 # -
 # - Windows Network interfaces - Ip forwarding
 # -
-
-locals {
-  windows_vms_with_enable_enable_ip_forwarding_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "enable_ip_forwarding", null) == true]
-  windows_vms_with_enable_enable_ip_forwarding_values = [for x in var.windows_vms : {
-    enable_ip_forwarding = x.enable_ip_forwarding
-  } if lookup(x, "enable_ip_forwarding", null) == true]
-  windows_vms_with_enable_enable_ip_forwarding = zipmap(local.windows_vms_with_enable_enable_ip_forwarding_keys, local.windows_vms_with_enable_enable_ip_forwarding_values)
-}
-
 resource "azurerm_virtual_machine_extension" "windows_vms_with_enable_enable_ip_forwarding" {
-  for_each             = local.windows_vms_with_enable_enable_ip_forwarding
+  for_each             = { for x, y in var.windows_vms : x => y if lookup(y, "enable_ip_forwarding", null) == true ? true : false }
   name                 = "enable_accelerated_networking-for-${var.vm_prefix}${each.key}"
   virtual_machine_id   = azurerm_virtual_machine.windows_vms[each.key].id
   publisher            = "Microsoft.CPlat.Core"
@@ -514,17 +447,8 @@ resource "azurerm_virtual_machine_extension" "windows_vms_with_enable_enable_ip_
 # -
 # - Windows Virtual Machines Backup
 # -
-
-locals {
-  windows_vms_to_backup_keys = [for x in var.windows_vms : "${x.suffix_name}${x.id}" if lookup(x, "backup_policy_name", null) != null && var.recovery_services_vault_name != ""]
-  windows_vms_to_backup_values = [for x in var.windows_vms : {
-    backup_policy_name = x.backup_policy_name
-  } if lookup(x, "backup_policy_name", null) != null && var.recovery_services_vault_name != ""]
-  windows_vms_to_backup = zipmap(local.windows_vms_to_backup_keys, local.windows_vms_to_backup_values)
-}
-
 resource "azurerm_backup_protected_vm" "windows_vm_resources_to_backup" {
-  for_each            = local.windows_vms_to_backup
+  for_each            = { for x, y in var.windows_vms : x => y if lookup(y, "backup_policy_name", null) != null && var.recovery_services_vault_name != "" }
   resource_group_name = element(data.azurerm_recovery_services_vault.vault.*.resource_group_name, 0)
   recovery_vault_name = element(data.azurerm_recovery_services_vault.vault.*.name, 0)
   source_vm_id        = azurerm_virtual_machine.windows_vms[each.key].id
