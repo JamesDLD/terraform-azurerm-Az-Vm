@@ -1,5 +1,3 @@
-
-
 variable "sa_bootdiag_storage_uri" {
   type        = string
   description = "Azure Storage Account Primary Queue Service Endpoint."

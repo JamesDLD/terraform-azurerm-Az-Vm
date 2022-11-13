@@ -8,11 +8,13 @@ Create the following objects : vnet, subnet, load balancer, linux and windows vi
 
 Requirement
 -----
-- Terraform v1.1.3 and above. 
-- AzureRm provider version v2.93 and above.
+
+- Terraform v1.3.4 and above.
+- AzureRm provider version v3.31 and above.
 
 Usage
 -----
+
 ```hcl
 #Set the terraform backend
 terraform {
@@ -168,20 +170,20 @@ resource "azurerm_virtual_network" "Demo" {
 
 module "Create-AzureRmLoadBalancer-Demo" {
   source                 = "JamesDLD/Az-LoadBalancer/azurerm"
-  version                = "0.2.0"
+  version                = "0.2.1"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
   lb_location            = data.azurerm_resource_group.rg.location
   lb_resource_group_name = data.azurerm_resource_group.rg.name
-  Lb_sku                 = "basic"
+  Lb_sku                 = "Basic"
   subnets                = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   lb_additional_tags     = var.additional_tags
 }
 
 module "Az-Vm-Demo" {
   source                            = "JamesDLD/Az-Vm/azurerm"
-  version                           = "0.3.0"
+  version                           = "0.3.1"
   sa_bootdiag_storage_uri           = "https://infrasdbx1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets                           = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   linux_vms                         = var.linux_vms   #(Mandatory)

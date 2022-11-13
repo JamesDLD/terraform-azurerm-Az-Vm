@@ -4,20 +4,22 @@ Test
 
 Content
 -----
-Create a Linux VM with 3 Data Disks mounted through a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html).
+Create a Linux VM with 3 Data Disks mounted through
+a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.html).
 
 | Description | Result |
 | ------------- | ------------- |
 | We are using the following [cloud init file : cloud-init-mount-three-disk.init](https://github.com/JamesDLD/terraform-azurerm-Az-Vm/blob/master/examples/linux-cloud-init/cloud-init-mount-three-disk.init)  | ![mounted_disk](https://raw.githubusercontent.com/JamesDLD/terraform-azurerm-Az-Vm/master/images/mounted_disk.png) |
 
-
 Requirement
 -----
-- Terraform v1.1.3 and above. 
-- AzureRm provider version v2.93 and above.
+
+- Terraform v1.3.4 and above.
+- AzureRm provider version v3.31 and above.
 
 Usage
 -----
+
 ```hcl
 #Set the terraform backend
 terraform {

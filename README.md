@@ -4,13 +4,16 @@ Test
 
 Requirement
 -----
-- Terraform v1.1.3 and above. 
-- AzureRm provider version v2.93 and above.
 
-Note : For VM Availability make sure to consider [SLA for Virtual Machines](https://azure.microsoft.com/en-us/support/legal/sla/virtual-machines/v1_9/?WT.mc_id=AZ-MVP-5003548)
+- Terraform v1.3.4 and above.
+- AzureRm provider version v3.31 and above.
+
+Note : For VM Availability make sure to
+consider [SLA for Virtual Machines](https://azure.microsoft.com/en-us/support/legal/sla/virtual-machines/v1_9/?WT.mc_id=AZ-MVP-5003548)
 
 Terraform resources used within the module
 -----
+
 | Resource | Description |
 |------|-------------|
 | [data azurerm_resource_group](https://www.terraform.io/docs/providers/azurerm/d/resource_group.html) | Get the Resource Group, re use it's tags for the sub resources. |
@@ -22,9 +25,9 @@ Terraform resources used within the module
 | [azurerm_network_interface_backend_address_pool_association](https://www.terraform.io/docs/providers/azurerm/r/network_interface_backend_address_pool_association.html) | Manages the association between a Network Interface and a Load Balancer's Backend Address Pool. |
 | [azurerm_virtual_machine](https://www.terraform.io/docs/providers/azurerm/r/virtual_machine.html) | Manages a Virtual Machine. |
 
-
 Examples
 -----
+
 | Name | Description |
 |------|-------------|
 | complete | Create the following objects : vnet, subnet, load balancer, linux and windows virtual machines. |

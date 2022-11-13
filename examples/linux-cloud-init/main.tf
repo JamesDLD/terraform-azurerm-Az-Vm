@@ -81,14 +81,16 @@ variable "linux_vms" {
           caching           = "ReadWrite"
           create_option     = "Empty"
         },
-      ]                                                  #(Mandatory) For no data disks set []     
-      linux_cloud_init_file_key     = "mount_three_disk" #(Optional)
-      snet_key                      = "demo1"            #Key of the Subnet
-      zones                         = ["1"]              #(Optional) Availability Zone id, could be 1, 2 or 3, if you don't need to set it to "", WARNING you could not have Availabilitysets and AvailabilityZones
-      nsg_key                       = null               #(Optional) Key of the Network Security Group, set to null if there is no Network Security Groups
-      enable_accelerated_networking = false              #(Optional) 
-      vm_size                       = "Standard_DS1_v2"  #(Mandatory) 
-      managed_disk_type             = "Premium_LRS"      #(Mandatory) 
+      ]                                              #(Mandatory) For no data disks set []     
+      linux_cloud_init_file_key = "mount_three_disk" #(Optional)
+      snet_key                  = "demo1"            #Key of the Subnet
+      zones                     = ["1"]
+      #(Optional) Availability Zone id, could be 1, 2 or 3, if you don't need to set it to "", WARNING you could not have Availabilitysets and AvailabilityZones
+      nsg_key = null
+      #(Optional) Key of the Network Security Group, set to null if there is no Network Security Groups
+      enable_accelerated_networking = false             #(Optional) 
+      vm_size                       = "Standard_DS1_v2" #(Mandatory)
+      managed_disk_type             = "Premium_LRS"     #(Mandatory)
     }
   }
 }
@@ -151,8 +153,9 @@ module "Az-Vm-Demo" {
   linux_cloud_init_contents = data.template_cloudinit_config.config #(Optional)
   windows_vms               = {}                                    #(Mandatory)
   vm_resource_group_name    = data.azurerm_resource_group.rg.name
-  vm_prefix                 = "myproductvm"                     #(Optional)
-  admin_username            = "myadmlogin"                      #(Optional) Use the one in the vm map if not provided
-  admin_password            = "Myadmlogin_StoredInASecretFile?" #(Optional) Use the one in the vm map if not provided, #Warning : When set you can delete this line this will delete the password from the tfstate. All arguments including the administrator login and password will be stored in the raw state as plain-text. Read more about sensitive data in state : https://www.terraform.io/docs/state/sensitive-data.html.
-  vm_additional_tags        = var.additional_tags               #(Optional)
+  vm_prefix                 = "myproductvm" #(Optional)
+  admin_username            = "myadmlogin"  #(Optional) Use the one in the vm map if not provided
+  admin_password            = "Myadmlogin_StoredInASecretFile?"
+  #(Optional) Use the one in the vm map if not provided, #Warning : When set you can delete this line this will delete the password from the tfstate. All arguments including the administrator login and password will be stored in the raw state as plain-text. Read more about sensitive data in state : https://www.terraform.io/docs/state/sensitive-data.html.
+  vm_additional_tags = var.additional_tags #(Optional)
 }
