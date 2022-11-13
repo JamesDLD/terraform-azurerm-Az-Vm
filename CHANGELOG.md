@@ -11,3 +11,4 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * Ensure that the option `private_ip_address_allocation` of the resource `azurerm_network_interface` is one of [Dynamic Static]
+* Replace the deprecated value `basic` by `Basic` of the parameter `Lb_sku` for the module `JamesDLD/Az-LoadBalancer/azurerm:0.2.1`

@@ -176,14 +176,14 @@ module "Create-AzureRmLoadBalancer-Demo" {
   lb_prefix              = "myproductvm-perimeter"
   lb_location            = data.azurerm_resource_group.rg.location
   lb_resource_group_name = data.azurerm_resource_group.rg.name
-  Lb_sku                 = "basic"
+  Lb_sku                 = "Basic"
   subnets                = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   lb_additional_tags     = var.additional_tags
 }
 
 module "Az-Vm-Demo" {
   source                            = "JamesDLD/Az-Vm/azurerm"
-  version                           = "0.3.0"
+  version                           = "0.3.1"
   sa_bootdiag_storage_uri           = "https://infrasdbx1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets                           = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   linux_vms                         = var.linux_vms   #(Mandatory)
