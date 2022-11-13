@@ -181,8 +181,8 @@ module "Create-AzureRmLoadBalancer-Demo" {
 }
 
 module "Az-Vm-Demo" {
-  #source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
-  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=upgrade"
+  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
+  #source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=upgrade"
   #source = "../../"
   #source                  = "JamesDLD/Az-Vm/azurerm"
   #version                 = "0.3.1"
