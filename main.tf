@@ -124,7 +124,8 @@ resource "azurerm_network_interface" "linux_nics" {
 # - Linux Network interfaces - Network Security Groups
 # -
 resource "azurerm_network_interface_security_group_association" "linux_nics_with_nsg" {
-  depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                  = { for x, y in var.linux_vms : x => y if lookup(y, "nsg_key", null) == null ? false : true }
   network_interface_id      = azurerm_network_interface.linux_nics[each.key].id
   network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
@@ -134,7 +135,8 @@ resource "azurerm_network_interface_security_group_association" "linux_nics_with
 # - Linux Network interfaces - Internal backend pools
 # -
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_internal_backend_pools" {
-  depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                = { for x, y in var.linux_vms : x => y if lookup(y, "internal_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.linux_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
@@ -145,7 +147,8 @@ resource "azurerm_network_interface_backend_address_pool_association" "linux_nic
 # - Linux Network interfaces - Public backend pools
 # -
 resource "azurerm_network_interface_backend_address_pool_association" "linux_nics_with_public_backend_pools" {
-  depends_on              = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                = { for x, y in var.linux_vms : x => y if lookup(y, "public_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.linux_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
@@ -213,7 +216,8 @@ resource "azurerm_virtual_machine" "linux_vms" {
     computer_name  = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}"
     admin_username = lookup(each.value, "admin_username", var.admin_username)
     admin_password = lookup(each.value, "admin_password", var.admin_password)
-    custom_data    = lookup(each.value, "linux_cloud_init_file_key", null) == null ? null : var.linux_cloud_init_contents[each.value.linux_cloud_init_file_key].rendered #(Optional) Specifies custom data to supply to the machine. On Linux-based systems, this can be used as a cloud-init script. On other systems, this will be copied as a file on disk. Internally, Terraform will base64 encode this value before sending it to the API. The maximum length of the binary array is 65535 bytes.
+    custom_data    = lookup(each.value, "linux_cloud_init_file_key", null) == null ? null : var.linux_cloud_init_contents[each.value.linux_cloud_init_file_key].rendered
+    #(Optional) Specifies custom data to supply to the machine. On Linux-based systems, this can be used as a cloud-init script. On other systems, this will be copied as a file on disk. Internally, Terraform will base64 encode this value before sending it to the API. The maximum length of the binary array is 65535 bytes.
   }
 
   dynamic "identity" {
@@ -323,7 +327,8 @@ resource "azurerm_network_interface" "windows_nics" {
 # - Windows Network interfaces - Network Security Groups
 # -
 resource "azurerm_network_interface_security_group_association" "windows_nics_with_nsg" {
-  depends_on                = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.linux_nics, azurerm_virtual_machine.linux_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                  = { for x, y in var.windows_vms : x => y if lookup(y, "nsg_key", null) == null ? false : true }
   network_interface_id      = azurerm_network_interface.windows_nics[each.key].id
   network_security_group_id = lookup(var.network_security_groups, each.value["nsg_key"], null)["id"]
@@ -333,7 +338,8 @@ resource "azurerm_network_interface_security_group_association" "windows_nics_wi
 # - Windows Network interfaces - Internal backend pools
 # -
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_internal_backend_pools" {
-  depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                = { for x, y in var.windows_vms : x => y if lookup(y, "internal_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.windows_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
@@ -344,7 +350,8 @@ resource "azurerm_network_interface_backend_address_pool_association" "windows_n
 # - Windows Network interfaces - Public backend pools
 # -
 resource "azurerm_network_interface_backend_address_pool_association" "windows_nics_with_public_backend_pools" {
-  depends_on              = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms] #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
+  depends_on = [azurerm_network_interface.windows_nics, azurerm_virtual_machine.windows_vms]
+  #did add the depedency because of the following issue : https://github.com/terraform-providers/terraform-provider-azurerm/issues/4330
   for_each                = { for x, y in var.windows_vms : x => y if lookup(y, "public_lb_key", null) == null ? false : true }
   network_interface_id    = azurerm_network_interface.windows_nics[each.key].id
   ip_configuration_name   = "${var.vm_prefix}${each.key}nic001-CFG"
@@ -355,14 +362,15 @@ resource "azurerm_network_interface_backend_address_pool_association" "windows_n
 # - Windows Virtual Machines
 # -
 resource "azurerm_virtual_machine" "windows_vms" {
-  for_each                         = var.windows_vms
-  name                             = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}"
-  location                         = local.location
-  resource_group_name              = var.vm_resource_group_name
-  network_interface_ids            = [lookup(azurerm_network_interface.windows_nics, each.key)["id"]]
-  zones                            = lookup(each.value, "zones", null)
-  vm_size                          = each.value["vm_size"]
-  license_type                     = lookup(each.value, "license_type", null) # (Optional) Specifies the BYOL Type for this Virtual Machine. This is only applicable to Windows Virtual Machines. Possible values are Windows_Client and Windows_Server.
+  for_each              = var.windows_vms
+  name                  = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}"
+  location              = local.location
+  resource_group_name   = var.vm_resource_group_name
+  network_interface_ids = [lookup(azurerm_network_interface.windows_nics, each.key)["id"]]
+  zones                 = lookup(each.value, "zones", null)
+  vm_size               = each.value["vm_size"]
+  license_type          = lookup(each.value, "license_type", null)
+  # (Optional) Specifies the BYOL Type for this Virtual Machine. This is only applicable to Windows Virtual Machines. Possible values are Windows_Client and Windows_Server.
   delete_os_disk_on_termination    = lookup(each.value, "delete_os_disk_on_termination", true)
   delete_data_disks_on_termination = lookup(each.value, "delete_data_disks_on_termination", true)
   boot_diagnostics {

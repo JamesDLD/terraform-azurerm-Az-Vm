@@ -8,11 +8,13 @@ Create the following objects : vnet, subnet, load balancer, linux and windows vi
 
 Requirement
 -----
-- Terraform v1.1.3 and above. 
+
+- Terraform v1.1.3 and above.
 - AzureRm provider version v2.93 and above.
 
 Usage
 -----
+
 ```hcl
 #Set the terraform backend
 terraform {
