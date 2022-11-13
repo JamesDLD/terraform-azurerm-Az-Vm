@@ -9,8 +9,8 @@ Create the following objects : vnet, subnet, load balancer, linux and windows vi
 Requirement
 -----
 
-- Terraform v1.1.3 and above.
-- AzureRm provider version v2.93 and above.
+- Terraform v1.3.4 and above.
+- AzureRm provider version v3.31 and above.
 
 Usage
 -----
@@ -170,7 +170,7 @@ resource "azurerm_virtual_network" "Demo" {
 
 module "Create-AzureRmLoadBalancer-Demo" {
   source                 = "JamesDLD/Az-LoadBalancer/azurerm"
-  version                = "0.2.0"
+  version                = "0.2.1"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"

@@ -169,7 +169,7 @@ resource "azurerm_virtual_network" "Demo" {
 #Call module
 module "Create-AzureRmLoadBalancer-Demo" {
   source                 = "JamesDLD/Az-LoadBalancer/azurerm"
-  version                = "0.2.0"
+  version                = "0.2.1"
   Lbs                    = var.Lbs
   LbRules                = var.LbRules
   lb_prefix              = "myproductvm-perimeter"
@@ -181,10 +181,11 @@ module "Create-AzureRmLoadBalancer-Demo" {
 }
 
 module "Az-Vm-Demo" {
-  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
+  #source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=master"
+  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-Vm.git//?ref=upgrade"
   #source = "../../"
   #source                  = "JamesDLD/Az-Vm/azurerm"
-  #version                 = "0.3.0"
+  #version                 = "0.3.1"
   sa_bootdiag_storage_uri = "https://infrasdbx1vpcjdld1.blob.core.windows.net/" #(Mandatory)
   subnets                 = { for x, y in azurerm_virtual_network.Demo.subnet : x.name => y }
   linux_vms               = var.linux_vms   #(Mandatory)

@@ -14,8 +14,8 @@ a [cloud init file](https://cloudinit.readthedocs.io/en/latest/topics/examples.h
 Requirement
 -----
 
-- Terraform v1.1.3 and above.
-- AzureRm provider version v2.93 and above.
+- Terraform v1.3.4 and above.
+- AzureRm provider version v3.31 and above.
 
 Usage
 -----

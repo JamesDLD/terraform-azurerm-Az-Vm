@@ -112,7 +112,7 @@ resource "azurerm_network_interface" "linux_nics" {
   ip_configuration {
     name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
     subnet_id                     = lookup(var.subnets, each.value["snet_key"], null)["id"]
-    private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "dynamic" : "static"
+    private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "Dynamic" : "Static"
     private_ip_address            = lookup(each.value, "static_ip", null)
     public_ip_address_id          = lookup(each.value, "public_ip_key", null) == null ? null : lookup(var.public_ips, each.value["public_ip_key"], null)["id"]
   }
@@ -315,7 +315,7 @@ resource "azurerm_network_interface" "windows_nics" {
   ip_configuration {
     name                          = "${var.vm_prefix}${each.value["suffix_name"]}${each.value["id"]}nic001-CFG"
     subnet_id                     = lookup(var.subnets, each.value["snet_key"], null)["id"]
-    private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "dynamic" : "static"
+    private_ip_address_allocation = lookup(each.value, "static_ip", null) == null ? "Dynamic" : "Static"
     private_ip_address            = lookup(each.value, "static_ip", null)
     public_ip_address_id          = lookup(each.value, "public_ip_key", null) == null ? null : lookup(var.public_ips, each.value["public_ip_key"], null)["id"]
   }
